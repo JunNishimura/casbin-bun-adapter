@@ -1,0 +1,27 @@
+name: test
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    name: test
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+      - name: get dependencies
+        run: go get -v -t -d ./...
+      - name: test code
+        run: go test ./...
