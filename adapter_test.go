@@ -50,7 +50,7 @@ func initAdapter(t *testing.T, driverName, dataSourceName string, opts ...adapte
 }
 
 func TestBunAdapter_AddPolicy(t *testing.T) {
-	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test")
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
 	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
 	if err != nil {
 		t.Fatalf("failed to create enforcer: %v", err)

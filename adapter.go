@@ -16,6 +16,7 @@ import (
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/driver/sqliteshim"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 const (
@@ -34,6 +35,7 @@ var (
 type bunAdapter struct {
 	db        *bun.DB
 	tableName string
+	debugMode bool
 }
 
 type adapterOption func(*bunAdapter)
@@ -41,6 +43,12 @@ type adapterOption func(*bunAdapter)
 func WithTableName(tableName string) adapterOption {
 	return func(a *bunAdapter) {
 		a.tableName = tableName
+	}
+}
+
+func WithDebugMode() adapterOption {
+	return func(a *bunAdapter) {
+		a.debugMode = true
 	}
 }
 
@@ -52,6 +60,10 @@ func NewAdapter(driverName, dataSourceName string, opts ...adapterOption) (*bunA
 
 	for _, opt := range opts {
 		opt(b)
+	}
+
+	if b.debugMode {
+		b.db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 	}
 
 	if err := b.createTalbe(); err != nil {
