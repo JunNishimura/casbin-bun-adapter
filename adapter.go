@@ -186,7 +186,10 @@ func (a *bunAdapter) savePolicyRecords(policies []CasbinPolicy) error {
 	}
 
 	// bulk insert new policies
-	if _, err := a.db.NewInsert().Model(&policies).Exec(context.Background()); err != nil {
+	if _, err := a.db.NewInsert().
+		Model(&policies).
+		Table(a.tableName).
+		Exec(context.Background()); err != nil {
 		return err
 	}
 
