@@ -54,6 +54,10 @@ func NewAdapter(driverName, dataSourceName string, opts ...adapterOption) (*bunA
 		opt(b)
 	}
 
+	if err := b.createTalbe(); err != nil {
+		return nil, err
+	}
+
 	return b, nil
 }
 
@@ -95,6 +99,29 @@ func connectDB(driverName, dataSourceName string) (*bun.DB, error) {
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driverName)
 	}
+}
+
+func (a *bunAdapter) createTalbe() error {
+	if _, err := a.db.NewCreateTable().
+		Model((*CasbinPolicy)(nil)).
+		Table(a.tableName).
+		IfNotExists().
+		Exec(context.Background()); err != nil {
+		return err
+	}
+	return nil
+}
+
+var _ bun.AfterCreateTableHook = (*CasbinPolicy)(nil)
+
+func (*CasbinPolicy) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
+	_, err := query.DB().NewCreateIndex().
+		Model((*CasbinPolicy)(nil)).
+		Unique().
+		Index("idx_ptype_v0_v1_v2_v3_v4_v5").
+		Column("ptype", "v0", "v1", "v2", "v3", "v4", "v5").
+		Exec(ctx)
+	return err
 }
 
 // LoadPolicy loads all policy rules from the storage.
