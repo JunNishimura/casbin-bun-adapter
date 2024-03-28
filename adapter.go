@@ -482,13 +482,17 @@ func (a *bunAdapter) UpdateFilteredPolicies(sec string, ptype string, newRules [
 	// store old policies
 	oldPolicies := make([]CasbinPolicy, 0)
 	if err := selectQuery.Scan(context.Background(), &oldPolicies); err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
 	// delete old policies
 	if _, err := deleteQuery.Exec(context.Background()); err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
@@ -497,7 +501,9 @@ func (a *bunAdapter) UpdateFilteredPolicies(sec string, ptype string, newRules [
 		Model(&newPolicies).
 		Table(a.tableName).
 		Exec(context.Background()); err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
