@@ -119,15 +119,23 @@ func (a *bunAdapter) createTable() error {
 		ModelTableExpr(a.tableName).
 		IfNotExists().
 		Exec(context.Background())
+	tableNameForHook = a.tableName // pass the tableName field to the hook function
 	return err
 }
 
-var _ bun.AfterCreateTableHook = (*CasbinPolicy)(nil)
+var (
+	_ bun.AfterCreateTableHook = (*CasbinPolicy)(nil)
+	// TODO: find a better way to pass the tableName field to the hook function
+	// Originally, we want to use the value of the tableName field of the bunAdapter
+	// but hook function cannot access the field of the struct `bunAdapter`
+	// so we use a global variable to store the value of the tableName field
+	tableNameForHook = defaultTableName
+)
 
 func (*CasbinPolicy) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
 	_, err := query.DB().NewCreateIndex().
 		Model((*CasbinPolicy)(nil)).
-		ModelTableExpr(query.GetTableName()).
+		ModelTableExpr(tableNameForHook).
 		Unique().
 		Index("idx_ptype_v0_v1_v2_v3_v4_v5").
 		Column("ptype", "v0", "v1", "v2", "v3", "v4", "v5").
