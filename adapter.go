@@ -114,26 +114,31 @@ func connectDB(driverName, dataSourceName string) (*bun.DB, error) {
 }
 
 func (a *bunAdapter) createTalbe() error {
-	if _, err := a.db.NewCreateTable().
-		Model((*CasbinPolicy)(nil)).
-		ModelTableExpr(a.tableName).
-		IfNotExists().
-		Exec(context.Background()); err != nil {
+	if err := a.db.RunInTx(context.Background(), &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+		if _, err := tx.NewCreateTable().
+			Model((*CasbinPolicy)(nil)).
+			ModelTableExpr(a.tableName).
+			IfNotExists().
+			Exec(ctx); err != nil {
+			return err
+		}
+		// it might be better to create a unique index using hooks
+		// but the table name(a.tableName) cannot be accessed from the hook
+		// so we create the index here
+		if _, err := tx.NewCreateIndex().
+			Model((*CasbinPolicy)(nil)).
+			ModelTableExpr(a.tableName).
+			Unique().
+			Index("idx_ptype_v0_v1_v2_v3_v4_v5").
+			Column("ptype", "v0", "v1", "v2", "v3", "v4", "v5").
+			Exec(ctx); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 	return nil
-}
-
-var _ bun.AfterCreateTableHook = (*CasbinPolicy)(nil)
-
-func (*CasbinPolicy) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
-	_, err := query.DB().NewCreateIndex().
-		Model((*CasbinPolicy)(nil)).
-		Unique().
-		Index("idx_ptype_v0_v1_v2_v3_v4_v5").
-		Column("ptype", "v0", "v1", "v2", "v3", "v4", "v5").
-		Exec(ctx)
-	return err
 }
 
 // LoadPolicy loads all policy rules from the storage.
