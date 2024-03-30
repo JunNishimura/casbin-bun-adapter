@@ -119,9 +119,6 @@ func TestBunAdapter_RemovePolicies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create enforcer: %v", err)
 	}
-	if _, err := e.RemovePolicy("alice", "data1", "read"); err != nil {
-		t.Fatalf("failed to remove policy: %v", err)
-	}
 	if _, err := e.RemovePolicies([][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}}); err != nil {
 		t.Fatalf("failed to remove policies: %v", err)
 	}
@@ -133,4 +130,94 @@ func TestBunAdapter_RemovePolicies(t *testing.T) {
 		e,
 		[][]string{{"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
 	)
+}
+
+func TestBunAdapter_RemoveFilteredPolicy(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	// 1. check if the policy with alice is all removed
+	if _, err := e.AddPolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("failed to add policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"alice", "data1", "write"},
+		},
+	)
+	if _, err := e.RemoveFilteredPolicy(0, "alice"); err != nil {
+		t.Fatalf("failed to remove filtered policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+		},
+	)
+	// 2. check if the policy with data1 is all removed
+	if _, err := e.AddPolicies([][]string{{"alice", "data1", "read"}, {"alice", "data1", "write"}, {"alice", "data2", "read"}, {"alice", "data2", "write"}}); err != nil {
+		t.Fatalf("failed to add policies: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"alice", "data1", "read"},
+			{"alice", "data1", "write"},
+			{"alice", "data2", "read"},
+			{"alice", "data2", "write"},
+		},
+	)
+	if _, err := e.RemoveFilteredPolicy(1, "data1"); err != nil {
+		t.Fatalf("failed to remove filtered policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"alice", "data2", "read"},
+			{"alice", "data2", "write"},
+		},
+	)
+	// 3. check if the policy with alice and data2 is all removed
+	if _, err := e.RemoveFilteredPolicy(0, "alice", "data2"); err != nil {
+		t.Fatalf("failed to remove filtered policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+		},
+	)
+	// 4. check if the all policies are removed when fieldValues is empty
+	if _, err := e.RemoveFilteredPolicy(0, ""); err != nil {
+		t.Fatalf("failed to remove filtered policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(t, e, [][]string{})
 }
