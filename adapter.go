@@ -420,9 +420,12 @@ func (a *bunAdapter) UpdateFilteredPolicies(sec string, ptype string, newRules [
 		return nil, err
 	}
 
+	oldPolicies := make([]CasbinPolicy, 0)
 	selectQuery := tx.NewSelect().
+		Model(&oldPolicies).
 		Where("ptype = ?", ptype)
 	deleteQuery := tx.NewDelete().
+		Model((*CasbinPolicy)(nil)).
 		Where("ptype = ?", ptype)
 
 	// Note that empty string in fieldValues could be any word.
@@ -488,8 +491,7 @@ func (a *bunAdapter) UpdateFilteredPolicies(sec string, ptype string, newRules [
 	}
 
 	// store old policies
-	oldPolicies := make([]CasbinPolicy, 0)
-	if err := selectQuery.Scan(context.Background(), &oldPolicies); err != nil {
+	if err := selectQuery.Scan(context.Background()); err != nil {
 		if err := tx.Rollback(); err != nil {
 			return nil, err
 		}
