@@ -282,8 +282,8 @@ func TestBunAdapter_UpdateFilteredPolicies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create enforcer: %v", err)
 	}
-	// 1. check if the policy with data1 is all updated
-	if _, err := e.AddPolicy("bob", "data1", "read"); err != nil {
+	// 1. check if the policy with alice is all updated
+	if _, err := e.AddPolicy("alice", "data1", "write"); err != nil {
 		t.Fatalf("failed to add policy: %v", err)
 	}
 	_ = e.LoadPolicy()
@@ -295,33 +295,13 @@ func TestBunAdapter_UpdateFilteredPolicies(t *testing.T) {
 			{"bob", "data2", "write"},
 			{"data2_admin", "data2", "read"},
 			{"data2_admin", "data2", "write"},
-			{"bob", "data1", "read"},
-		},
-	)
-	if _, err := e.UpdateFilteredPolicies(
-		[][]string{{"data1", "write"}},
-		1,
-		"data1",
-	); err != nil {
-		t.Fatalf("failed to update filtered policies: %v", err)
-	}
-	_ = e.LoadPolicy()
-	testGetPolicy(
-		t,
-		e,
-		[][]string{
 			{"alice", "data1", "write"},
-			{"bob", "data2", "write"},
-			{"data2_admin", "data2", "read"},
-			{"data2_admin", "data2", "write"},
-			{"bob", "data1", "write"},
 		},
 	)
-	// 2. check if the policy with data1 is all updated
 	if _, err := e.UpdateFilteredPolicies(
-		[][]string{{"delete"}},
-		1,
-		"data1",
+		[][]string{{"alice", "data3", "read"}, {"alice", "data3", "write"}},
+		0,
+		"alice",
 	); err != nil {
 		t.Fatalf("failed to update filtered policies: %v", err)
 	}
@@ -330,11 +310,32 @@ func TestBunAdapter_UpdateFilteredPolicies(t *testing.T) {
 		t,
 		e,
 		[][]string{
-			{"alice", "data1", "delete"},
 			{"bob", "data2", "write"},
 			{"data2_admin", "data2", "read"},
 			{"data2_admin", "data2", "write"},
-			{"bob", "data1", "delete"},
+			{"alice", "data3", "read"},
+			{"alice", "data3", "write"},
+		},
+	)
+	// 2. check if the policy with data2 and write is all updated
+	if _, err := e.UpdateFilteredPolicies(
+		[][]string{{"bob", "data2", "delete"}, {"data2_admin", "data2", "delete"}},
+		1,
+		"data2",
+		"write",
+	); err != nil {
+		t.Fatalf("failed to update filtered policies: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"bob", "data2", "delete"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "delete"},
+			{"alice", "data3", "read"},
+			{"alice", "data3", "write"},
 		},
 	)
 }
