@@ -128,6 +128,7 @@ func (a *bunAdapter) createTalbe() error {
 		if _, err := tx.NewCreateIndex().
 			Model((*CasbinPolicy)(nil)).
 			ModelTableExpr(a.tableName).
+			IfNotExists().
 			Unique().
 			Index("idx_ptype_v0_v1_v2_v3_v4_v5").
 			Column("ptype", "v0", "v1", "v2", "v3", "v4", "v5").
