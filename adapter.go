@@ -287,6 +287,7 @@ func (a *bunAdapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex i
 
 func (a *bunAdapter) deleteFilteredPolicy(ptype string, fieldIndex int, fieldValues ...string) error {
 	query := a.db.NewDelete().
+		Model((*CasbinPolicy)(nil)).
 		Where("ptype = ?", ptype)
 
 	// Note that empty string in fieldValues could be any word.
