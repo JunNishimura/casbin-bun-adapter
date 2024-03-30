@@ -1,16 +1,19 @@
 package casbinbunadapter
 
+import "github.com/uptrace/bun"
+
 // Database storage format following the below
 // https://casbin.org/docs/policy-storage#database-storage-format
 type CasbinPolicy struct {
-	ID    int64  `bun:"id,pk,autoincrement"`
-	PType string `bun:"ptype,type:varchar(100),notnull"`
-	V0    string `bun:"v0,type:varchar(100)"`
-	V1    string `bun:"v1,type:varchar(100)"`
-	V2    string `bun:"v2,type:varchar(100)"`
-	V3    string `bun:"v3,type:varchar(100)"`
-	V4    string `bun:"v4,type:varchar(100)"`
-	V5    string `bun:"v5,type:varchar(100)"`
+	bun.BaseModel `bun:"casbin_policies,alias:cp"`
+	ID            int64  `bun:"id,pk,autoincrement"`
+	PType         string `bun:"ptype,type:varchar(100),notnull"`
+	V0            string `bun:"v0,type:varchar(100)"`
+	V1            string `bun:"v1,type:varchar(100)"`
+	V2            string `bun:"v2,type:varchar(100)"`
+	V3            string `bun:"v3,type:varchar(100)"`
+	V4            string `bun:"v4,type:varchar(100)"`
+	V5            string `bun:"v5,type:varchar(100)"`
 }
 
 func (c CasbinPolicy) toSlice() []string {
