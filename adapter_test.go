@@ -93,3 +93,44 @@ func TestBunAdapter_AddPolicies(t *testing.T) {
 		},
 	)
 }
+
+func TestBunAdapter_RemovePolicy(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	if _, err := e.RemovePolicy("alice", "data1", "read"); err != nil {
+		t.Fatalf("failed to remove policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
+	)
+}
+
+func TestBunAdapter_RemovePolicies(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	if _, err := e.RemovePolicy("alice", "data1", "read"); err != nil {
+		t.Fatalf("failed to remove policy: %v", err)
+	}
+	if _, err := e.RemovePolicies([][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}}); err != nil {
+		t.Fatalf("failed to remove policies: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
+	)
+}
