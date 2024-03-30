@@ -221,3 +221,120 @@ func TestBunAdapter_RemoveFilteredPolicy(t *testing.T) {
 	_ = e.LoadPolicy()
 	testGetPolicy(t, e, [][]string{})
 }
+
+func TestBunAdapter_UpdatePolicy(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	if _, err := e.UpdatePolicy(
+		[]string{"alice", "data1", "read"},
+		[]string{"alice", "data1", "write"},
+	); err != nil {
+		t.Fatalf("failed to update policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "write"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+		},
+	)
+}
+
+func TestBunAdapter_UpdatePolicies(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	if _, err := e.UpdatePolicies(
+		[][]string{{"alice", "data1", "write"}, {"bob", "data2", "write"}},
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "read"}},
+	); err != nil {
+		t.Fatalf("failed to update policies: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+			{"bob", "data2", "read"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+		},
+	)
+}
+
+func TestBunAdapter_UpdateFilteredPolicies(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	// 1. check if the policy with data1 is all updated
+	if _, err := e.AddPolicy("bob", "data1", "read"); err != nil {
+		t.Fatalf("failed to add policy: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"bob", "data1", "read"},
+		},
+	)
+	if _, err := e.UpdateFilteredPolicies(
+		[][]string{{"data1", "write"}},
+		1,
+		"data1",
+	); err != nil {
+		t.Fatalf("failed to update filtered policies: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "write"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"bob", "data1", "write"},
+		},
+	)
+	// 2. check if the policy with data1 is all updated
+	if _, err := e.UpdateFilteredPolicies(
+		[][]string{{"delete"}},
+		1,
+		"data1",
+	); err != nil {
+		t.Fatalf("failed to update filtered policies: %v", err)
+	}
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "delete"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"bob", "data1", "delete"},
+		},
+	)
+}
