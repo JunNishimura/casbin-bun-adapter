@@ -244,6 +244,7 @@ func (a *bunAdapter) RemovePolicies(sec string, ptype string, rules [][]string) 
 
 func (a *bunAdapter) deleteRecord(existingPolicy CasbinPolicy) error {
 	query := a.db.NewDelete().
+		Model((*CasbinPolicy)(nil)).
 		Where("ptype = ?", existingPolicy.PType)
 
 	values := existingPolicy.filterValuesWithKey()
@@ -253,6 +254,7 @@ func (a *bunAdapter) deleteRecord(existingPolicy CasbinPolicy) error {
 
 func (a *bunAdapter) deleteRecordInTx(tx bun.Tx, existingPolicy CasbinPolicy) error {
 	query := tx.NewDelete().
+		Model((*CasbinPolicy)(nil)).
 		Where("ptype = ?", existingPolicy.PType)
 
 	values := existingPolicy.filterValuesWithKey()
