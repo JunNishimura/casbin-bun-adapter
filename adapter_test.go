@@ -331,11 +331,11 @@ func TestBunAdapter_UpdateFilteredPolicies(t *testing.T) {
 		t,
 		e,
 		[][]string{
-			{"bob", "data2", "delete"},
 			{"data2_admin", "data2", "read"},
-			{"data2_admin", "data2", "delete"},
 			{"alice", "data3", "read"},
 			{"alice", "data3", "write"},
+			{"bob", "data2", "delete"},
+			{"data2_admin", "data2", "delete"},
 		},
 	)
 }
