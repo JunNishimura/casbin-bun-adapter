@@ -67,3 +67,29 @@ func TestBunAdapter_AddPolicy(t *testing.T) {
 		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}, {"jack", "data1", "read"}},
 	)
 }
+
+func TestBunAdapter_AddPolicies(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	if _, err := e.AddPolicies([][]string{{"jack", "data1", "read"}, {"jill", "data2", "write"}}); err != nil {
+		t.Fatalf("failed to add policies: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+			{"jack", "data1", "read"},
+			{"jill", "data2", "write"},
+		},
+	)
+}
