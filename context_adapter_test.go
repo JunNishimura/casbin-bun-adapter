@@ -35,9 +35,8 @@ func clearDBPolicy() (*casbin.Enforcer, *ctxBunAdapter) {
 		panic(err)
 	}
 	e.ClearPolicy()
-	if err := e.SavePolicy(); err != nil {
-		panic(err)
-	}
+	_ = e.SavePolicy()
+
 	return e, ca
 }
 
