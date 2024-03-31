@@ -15,7 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: run semantic release
-        if: github.repository == 'JunNishimura/casbin-bun-adapter' && github.event_name == 'push'
         run: |
           npm install --save-dev semantic-release@latest
           npx semantic-release
