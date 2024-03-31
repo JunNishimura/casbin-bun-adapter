@@ -30,7 +30,7 @@ func clearDBPolicy() (*casbin.Enforcer, *ctxBunAdapter) {
 	if err != nil {
 		panic(err)
 	}
-	e, err := casbin.NewEnforcer("examples/rbac_model.conf", ca)
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", ca)
 	if err != nil {
 		panic(err)
 	}
