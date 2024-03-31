@@ -2,7 +2,7 @@ name: Release
 
 on:
   workflow_run:
-    workflows: ["golangci", "test"]
+    workflows: ["test"]
     branches: ["main"]
     types:
       - completed
@@ -10,7 +10,7 @@ on:
 jobs:
   release:
     name: Release
-    needs: [golangci, test]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
