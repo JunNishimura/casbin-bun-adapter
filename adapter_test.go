@@ -134,7 +134,7 @@ func TestBunAdapters(t *testing.T) {
 	testSaveLoad(t, a)
 	testAutoSave(t, a)
 
-	a = initAdapter(t, "mssql", "sqlserver://sa:Password123@localhost:1433?database=test")
+	a = initAdapter(t, "mssql", "sqlserver://sa:Password123@localhost:1433?database=master")
 	testSaveLoad(t, a)
 	testAutoSave(t, a)
 }
