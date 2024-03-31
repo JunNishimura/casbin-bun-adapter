@@ -46,7 +46,7 @@ func TestCtxBunAdapter_LoadPolicyCtx(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
+	_ = ca.SavePolicyCtx(context.Background(), e.GetModel())
 	assert.NoError(t, ca.LoadPolicyCtx(context.Background(), e.GetModel()))
 	e, _ = casbin.NewEnforcer("testdata/rbac_model.conf", ca)
 	testGetPolicy(
