@@ -7,6 +7,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Release
@@ -14,9 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: run semantic release
-        run: |
-          npm install --save-dev semantic-release@17.2.4
-          npx semantic-release
+      - name: setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+      - name: Install dependencies
+        run: npm clean-install
+      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
+        run: npm audit signatures
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
