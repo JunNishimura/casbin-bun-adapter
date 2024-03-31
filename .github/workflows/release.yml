@@ -3,11 +3,9 @@ name: Release
 on:
   workflow_run:
     workflows: ["golangci", "test"]
+    branches: ["main"]
     types:
       - completed
-  push:
-    branches:
-      - main
 
 jobs:
   release:
