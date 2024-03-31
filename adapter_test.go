@@ -93,7 +93,7 @@ func testAutoSave(t *testing.T, a *bunAdapter) {
 	testGetPolicy(
 		t,
 		e,
-		[][]string{{"alice", "data1", "write"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}, {"alice", "data1", "write"}},
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}, {"alice", "data1", "write"}},
 	)
 
 	if _, err := e.RemovePolicy("alice", "data1", "write"); err != nil {
