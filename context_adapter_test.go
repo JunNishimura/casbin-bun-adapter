@@ -71,6 +71,7 @@ func TestCtxBunAdapter_LoadPolicyCtx(t *testing.T) {
 func TestCtxBunAdapter_SavePolicyCtx(t *testing.T) {
 	e, ca := clearDBPolicy()
 
+	e.EnableAutoSave(false)
 	_, _ = e.AddPolicy("alice", "data1", "read")
 	assert.NoError(t, ca.SavePolicyCtx(context.Background(), e.GetModel()))
 	_ = e.LoadPolicy()
