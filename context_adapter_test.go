@@ -41,6 +41,54 @@ func clearDBPolicy() (*casbin.Enforcer, *ctxBunAdapter) {
 	return e, ca
 }
 
+func TestCtxBunAdapter_LoadPolicyCtx(t *testing.T) {
+	e, _ := casbin.NewEnforcer("testdata/rbac_model.conf", "testdata/rbac_policy.csv")
+	ca, err := NewCtxAdapter("mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	if err != nil {
+		panic(err)
+	}
+
+	assert.NoError(t, ca.LoadPolicyCtx(context.Background(), e.GetModel()))
+	e, _ = casbin.NewEnforcer("testdata/rbac_model.conf", ca)
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+			{"bob", "data2", "write"},
+			{"data2_admin", "data2", "read"},
+			{"data2_admin", "data2", "write"},
+		},
+	)
+
+	var p = gomonkey.ApplyFunc(executeWithContext, mockExecuteWithContextTimeOut)
+	defer p.Reset()
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Microsecond)
+	defer cancel()
+	assert.EqualError(t, ca.LoadPolicyCtx(ctx, e.GetModel()), "context deadline exceeded")
+}
+
+func TestCtxBunAdapter_SavePolicyCtx(t *testing.T) {
+	e, ca := clearDBPolicy()
+
+	_, _ = e.AddPolicy("alice", "data1", "read")
+	assert.NoError(t, ca.SavePolicyCtx(context.Background(), e.GetModel()))
+	_ = e.LoadPolicy()
+	testGetPolicy(
+		t,
+		e,
+		[][]string{
+			{"alice", "data1", "read"},
+		},
+	)
+
+	var p = gomonkey.ApplyFunc(executeWithContext, mockExecuteWithContextTimeOut)
+	defer p.Reset()
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Microsecond)
+	defer cancel()
+	assert.EqualError(t, ca.SavePolicyCtx(ctx, e.GetModel()), "context deadline exceeded")
+}
+
 func TestCtxBunAdapter_AddPolicyCtx(t *testing.T) {
 	e, ca := clearDBPolicy()
 
