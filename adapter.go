@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime"
 
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
@@ -58,6 +59,12 @@ func NewAdapter(driverName, dataSourceName string, opts ...adapterOption) (*bunA
 	if err := b.createTable(); err != nil {
 		return nil, err
 	}
+
+	runtime.SetFinalizer(b, func(a *bunAdapter) {
+		if err := a.db.Close(); err != nil {
+			panic(err)
+		}
+	})
 
 	return b, nil
 }
