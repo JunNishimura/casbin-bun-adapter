@@ -19,6 +19,3 @@
 
 # Go workspace file
 go.work
-
-# node modules
-node_modules
