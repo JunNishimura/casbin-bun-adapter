@@ -49,6 +49,96 @@ func initAdapter(t *testing.T, driverName, dataSourceName string, opts ...adapte
 	return a
 }
 
+func testSaveLoad(t *testing.T, a *bunAdapter) {
+	initPolicy(t, a)
+
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
+	)
+}
+
+func testAutoSave(t *testing.T, a *bunAdapter) {
+	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)
+	if err != nil {
+		t.Fatalf("failed to create enforcer: %v", err)
+	}
+	e.EnableAutoSave(false)
+
+	if _, err := e.AddPolicy("alice", "data1", "read"); err != nil {
+		t.Fatalf("failed to add policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
+	)
+
+	e.EnableAutoSave(true)
+
+	if _, err := e.AddPolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("failed to add policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"alice", "data1", "write"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}, {"alice", "data1", "write"}},
+	)
+
+	if _, err := e.RemovePolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("failed to remove policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}},
+	)
+
+	if _, err := e.RemoveFilteredPolicy(0, "data2_admin"); err != nil {
+		t.Fatalf("failed to remove filtered policy: %v", err)
+	}
+	if err := e.LoadPolicy(); err != nil {
+		t.Fatalf("failed to load policy: %v", err)
+	}
+	testGetPolicy(
+		t,
+		e,
+		[][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}},
+	)
+}
+
+func TestBunAdapters(t *testing.T) {
+	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
+	testSaveLoad(t, a)
+	testAutoSave(t, a)
+
+	a = initAdapter(t, "postgres", "postgres://postgres:@localhost:5432/test?sslmode=disable")
+	testSaveLoad(t, a)
+	testAutoSave(t, a)
+
+	a = initAdapter(t, "sqlite3", "file::memory:?cache=shared")
+	testSaveLoad(t, a)
+	testAutoSave(t, a)
+
+	a = initAdapter(t, "mssql", "sqlserver://sa:Password123@localhost:1433?database=test")
+	testSaveLoad(t, a)
+	testAutoSave(t, a)
+}
+
 func TestBunAdapter_AddPolicy(t *testing.T) {
 	a := initAdapter(t, "mysql", "root:root@tcp(127.0.0.1:3306)/test", WithDebugMode())
 	e, err := casbin.NewEnforcer("testdata/rbac_model.conf", a)

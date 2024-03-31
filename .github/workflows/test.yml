@@ -21,6 +21,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -33,6 +34,7 @@ jobs:
         env:
           MSSQL_SA_PASSWORD: "Password123"
           ACCEPT_EULA: "Y"
+          DBNAME: "test"
         ports:
           - 1433:1433
     steps:
