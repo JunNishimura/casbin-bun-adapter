@@ -126,7 +126,7 @@ func TestBunAdapters(t *testing.T) {
 	testSaveLoad(t, a)
 	testAutoSave(t, a)
 
-	a = initAdapter(t, "postgres", "postgres://postgres:@localhost:5432/test?sslmode=disable")
+	a = initAdapter(t, "postgres", "postgres://postgres:postgres@localhost:5432/test?sslmode=disable")
 	testSaveLoad(t, a)
 	testAutoSave(t, a)
 
