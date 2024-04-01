@@ -3,10 +3,12 @@ module github.com/JunNishimura/casbin-bun-adapter
 go 1.22.0
 
 require (
-	github.com/casbin/casbin/v2 v2.85.0
+	github.com/agiledragon/gomonkey/v2 v2.11.0
+	github.com/casbin/casbin/v2 v2.86.0
 	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/go-cmp v0.6.0
+	github.com/stretchr/testify v1.9.0
 	github.com/uptrace/bun v1.1.17
 	github.com/uptrace/bun/dialect/mssqldialect v1.1.17
 	github.com/uptrace/bun/dialect/mysqldialect v1.1.17
@@ -14,11 +16,11 @@ require (
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.17
 	github.com/uptrace/bun/driver/pgdriver v1.1.17
 	github.com/uptrace/bun/driver/sqliteshim v1.1.17
+	github.com/uptrace/bun/extra/bundebug v1.1.17
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/agiledragon/gomonkey/v2 v2.11.0 // indirect
 	github.com/casbin/govaluate v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -33,9 +35,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.19 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun/extra/bundebug v1.1.17 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
