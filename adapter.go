@@ -43,9 +43,50 @@ func WithDebugMode() adapterOption {
 }
 
 func NewAdapter(driverName, dataSourceName string, opts ...adapterOption) (*bunAdapter, error) {
-	b, err := newAdapter(driverName, dataSourceName)
+	sqlDB, err := openSqlDB(driverName, dataSourceName)
 	if err != nil {
 		return nil, err
+	}
+
+	db, err := openBunDB(sqlDB, driverName)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := newAdapter(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func NewAdapterWithSqlDB(sqlDB *sql.DB, driverName string, opts ...adapterOption) (*bunAdapter, error) {
+	db, err := openBunDB(sqlDB, driverName)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := newAdapter(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func NewAdapterWithBunDB(db *bun.DB, opts ...adapterOption) (*bunAdapter, error) {
+	b, err := newAdapter(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func newAdapter(db *bun.DB, opts ...adapterOption) (*bunAdapter, error) {
+	b := &bunAdapter{
+		db: db,
 	}
 
 	for _, opt := range opts {
@@ -69,39 +110,30 @@ func NewAdapter(driverName, dataSourceName string, opts ...adapterOption) (*bunA
 	return b, nil
 }
 
-func newAdapter(driverName, dataSourceName string) (*bunAdapter, error) {
-	db, err := connectDB(driverName, dataSourceName)
-	if err != nil {
-		return nil, err
-	}
-
-	return &bunAdapter{
-		db: db,
-	}, nil
-}
-
-func connectDB(driverName, dataSourceName string) (*bun.DB, error) {
+func openSqlDB(driverName, dataSourceName string) (*sql.DB, error) {
 	switch driverName {
 	case "mysql":
-		sqlDB, err := sql.Open(driverName, dataSourceName)
-		if err != nil {
-			return nil, err
-		}
+		return sql.Open(driverName, dataSourceName)
+	case "postgres":
+		return sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dataSourceName))), nil
+	case "mssql":
+		return sql.Open(driverName, dataSourceName)
+	case "sqlite3":
+		return sql.Open(sqliteshim.ShimName, dataSourceName)
+	default:
+		return nil, fmt.Errorf("unsupported driver: %s", driverName)
+	}
+}
+
+func openBunDB(sqlDB *sql.DB, driverName string) (*bun.DB, error) {
+	switch driverName {
+	case "mysql":
 		return bun.NewDB(sqlDB, mysqldialect.New()), nil
 	case "postgres":
-		sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dataSourceName)))
 		return bun.NewDB(sqlDB, pgdialect.New()), nil
 	case "mssql":
-		sqlDB, err := sql.Open(driverName, dataSourceName)
-		if err != nil {
-			return nil, err
-		}
 		return bun.NewDB(sqlDB, mssqldialect.New()), nil
 	case "sqlite3":
-		sqlDB, err := sql.Open(sqliteshim.ShimName, dataSourceName)
-		if err != nil {
-			return nil, err
-		}
 		return bun.NewDB(sqlDB, sqlitedialect.New()), nil
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driverName)
