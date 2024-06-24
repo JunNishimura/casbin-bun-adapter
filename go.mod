@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/agiledragon/gomonkey/v2 v2.11.0
-	github.com/casbin/casbin/v2 v2.88.0
+	github.com/casbin/casbin/v2 v2.97.0
 	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/go-cmp v0.6.0
