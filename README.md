@@ -73,7 +73,7 @@ If you want to create a table with a name specified by the user, you can use Mod
 
 If we come up with a better approach, or if Bun's specifications regarding the above change, we will modify this one accordingly.
 
-## 2. Unique indexes cannot be added on columns in the casbin_policies table
+### 2. Unique indexes cannot be added on columns in the casbin_policies table
 For Postgres, you can specify `IF NOT EXISTS` to create a key only when the key does not exist, but other DBs do not support the above syntax by default.
 
 There seems to be no way to check if the index is posted in Bun.
