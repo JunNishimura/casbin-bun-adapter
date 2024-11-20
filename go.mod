@@ -3,8 +3,8 @@ module github.com/JunNishimura/casbin-bun-adapter
 go 1.22.0
 
 require (
-	github.com/agiledragon/gomonkey/v2 v2.11.0
-	github.com/casbin/casbin/v2 v2.88.0
+	github.com/agiledragon/gomonkey/v2 v2.12.0
+	github.com/casbin/casbin/v2 v2.98.0
 	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/go-cmp v0.6.0
@@ -21,7 +21,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/casbin/govaluate v1.1.0 // indirect
+	github.com/casbin/govaluate v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
